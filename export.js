@@ -1,1 +1,1 @@
-window.Instascan = require('./src/index');
+window.Instascan = require('./index');

@@ -18,8 +18,21 @@ class Camera {
   }
 
   async start() {
-    this._stream = await Camera._wrapErrors(async () => {
-      return navigator.mediaDevices.getUserMedia({
+    let constraints;
+    var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+    if (iOS) {
+      constraints = {
+        audio: false,
+        video: {
+          deviceId: {
+            exact: this.id
+          },
+          facingMode: 'environment',
+        }
+      };
+    } else {
+      constraints = {
         audio: false,
         video: {
           deviceId: {
@@ -27,7 +40,11 @@ class Camera {
           },
           facingMode: "environment"
         }
-      });
+      };
+    }
+
+    this._stream = await Camera._wrapErrors(async () => {
+      return navigator.mediaDevices.getUserMedia(constraints);
     });
 
     return this._stream;
@@ -66,7 +83,7 @@ class Camera {
 
   static async _wrapErrors(fn) {
     try {
-      return await fn();
+      return fn();
     } catch (e) {
       if (e.name) {
         throw new MediaError(e.name);
