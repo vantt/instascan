@@ -3,9 +3,10 @@ Real-time webcam-driven HTML5 QR code scanner. [Try the live demo](https://schmi
 
 ## Installing
 
+*Note:* To build package: *npx -p node@8 gulp build*
 *Note:* Chrome requires HTTPS when using the WebRTC API. Any pages using this library should be served over HTTPS.
 *Note:* Some browsers (like Edge) require [WebRTC Adapter shim](https://github.com/webrtc/adapter).
-*Note:* To build package: *npx -p node@8 gulp build*
+
 
 ### NPM
 

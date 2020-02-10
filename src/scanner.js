@@ -1,7 +1,8 @@
 const EventEmitter = require('events');
-const ZXing = require('./zxing')();
 const Visibility = require('visibilityjs');
 const StateMachine = require('fsm-as-promised');
+
+const ZXing = require('./zxing-wasm')();
 
 class ScanProvider {
   constructor(emitter, analyzer, captureImage, scanPeriod, refractoryPeriod) {
@@ -30,6 +31,7 @@ class ScanProvider {
 
   _analyze(skipDups) {
     let analysis = this._analyzer.analyze();
+
     if (!analysis) {
       return null;
     }
@@ -96,14 +98,14 @@ class Analyzer {
     this.canvas.style.display = 'none';
     this.canvasContext = null;
 
-    this.decodeCallback = ZXing.Runtime.addFunction(function (ptr, len, resultIndex, resultCount) {
+    this.decodeCallback = ZXing.addFunction(function (ptr, len, resultIndex, resultCount) {
       let result = new Uint8Array(ZXing.HEAPU8.buffer, ptr, len);
       let str = String.fromCharCode.apply(null, result);
       if (resultIndex === 0) {
         window.zxDecodeResult = '';
       }
       window.zxDecodeResult += str;
-    });
+    }, 'iiiiiffffffff');
   }
 
   analyze() {
@@ -142,12 +144,15 @@ class Analyzer {
       ZXing.HEAPU8[this.imageBuffer + j] = Math.trunc((r + g + b) / 3);
     }
 
+    console.log('Star decode: ' + new Date().toUTCString())
     let err = ZXing._decode_qr(this.decodeCallback);
     if (err) {
+      console.log('Decode Err: ' + new Date().toUTCString() + ' ' + err);
       return null;
     }
 
     let result = window.zxDecodeResult;
+    console.warn('Decode Result: ' + new Date().toUTCString() + ' ' + result);
     if (result != null) {
       return { result: result, canvas: this.canvas };
     }
